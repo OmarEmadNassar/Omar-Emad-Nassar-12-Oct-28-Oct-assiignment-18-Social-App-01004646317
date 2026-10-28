@@ -1,0 +1,10 @@
+.emoji-picker-popup {
+  width: 352px;
+  max-width: calc(100vw - 2rem);
+  contain: layout paint;
+}
+
+.emoji-picker-popup > div {
+  width: 100%;
+  min-height: 360px;
+}

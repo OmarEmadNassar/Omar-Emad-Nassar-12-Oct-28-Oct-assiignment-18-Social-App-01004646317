@@ -1,0 +1,532 @@
+<main>
+  <section class="mt-5">
+    @if (isLoading()) {
+      <div class="space-y-4">
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="h-11 w-11 rounded-full bg-slate-200"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 w-3/4 rounded bg-slate-200"></div>
+              <div class="h-3 w-1/2 rounded bg-slate-200"></div>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <div class="h-4 rounded bg-slate-200"></div>
+            <div class="h-4 w-5/6 rounded bg-slate-200"></div>
+          </div>
+        </div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="h-11 w-11 rounded-full bg-slate-200"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 w-3/4 rounded bg-slate-200"></div>
+              <div class="h-3 w-1/2 rounded bg-slate-200"></div>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <div class="h-4 rounded bg-slate-200"></div>
+            <div class="h-4 w-5/6 rounded bg-slate-200"></div>
+          </div>
+        </div>
+      </div>
+    } @else {
+      @if (hasLoadError()) {
+        <div
+          class="mx-auto max-w-xl rounded-lg border border-red-200 bg-white p-8 text-center text-sm text-red-600 shadow-sm"
+          role="alert"
+        >
+          <p>{{ loadErrorMessage() }}</p>
+          <button
+            type="button"
+            class="mt-3 cursor-pointer rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
+            (click)="getAllPosts()"
+          >
+            Retry
+          </button>
+        </div>
+      } @else {
+        @if (totalPage() > 1) {
+          <footer class="mb-4 w-full border-t border-gray-200 bg-white py-4">
+            <nav
+              class="mx-auto flex max-w-xl items-center justify-between gap-3 px-6"
+              aria-label="Post pages"
+            >
+              <button
+                type="button"
+                class="cursor-pointer rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                [disabled]="currentPage() === 1 || isLoading()"
+                (click)="previousPage()"
+              >
+                Previous
+              </button>
+
+              <div
+                class="flex min-w-0 flex-1 flex-nowrap items-center justify-center gap-2 overflow-x-auto whitespace-nowrap"
+              >
+                @for (pageNumber of pageNumbers(); track pageNumber) {
+                  <button
+                    type="button"
+                    class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md font-semibold transition disabled:cursor-not-allowed"
+                    [class.bg-blue-600]="currentPage() === pageNumber"
+                    [class.text-white]="currentPage() === pageNumber"
+                    [class.text-gray-700]="currentPage() !== pageNumber"
+                    [class.hover:bg-gray-200]="currentPage() !== pageNumber"
+                    [attr.aria-current]="currentPage() === pageNumber ? 'page' : null"
+                    [disabled]="isLoading()"
+                    (click)="getAllPosts(pageNumber)"
+                  >
+                    {{ pageNumber }}
+                  </button>
+                }
+              </div>
+
+              <button
+                type="button"
+                class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                [disabled]="currentPage() === totalPage() || isLoading()"
+                (click)="nextPage()"
+              >
+                Next
+              </button>
+            </nav>
+          </footer>
+        }
+
+        @for (post of visiblePosts(); track post._id) {
+          <article
+            [id]="'post-' + post._id"
+            class="mt-5 rounded-[20px] border border-[#edf0f5] bg-white px-5 pb-[18px] pt-5 shadow-[0_2px_10px_rgba(15,23,42,0.06)]"
+          >
+            <header class="mb-3 flex items-center justify-between">
+              <div class="flex min-w-0 items-center gap-3">
+                <a
+                  class="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  [routerLink]="['/profile', post.user._id]"
+                  [attr.aria-label]="'View ' + post.user.name + '\'s profile'"
+                >
+                  <img
+                    class="h-10 w-10 rounded-full object-cover"
+                    [src]="post.user.photo"
+                    [alt]="post.user.name"
+                  />
+                </a>
+                <div class="min-w-0">
+                  <a
+                    class="block truncate text-sm font-bold text-gray-900 hover:text-blue-600"
+                    [routerLink]="['/profile', post.user._id]"
+                  >
+                    {{ post.user.name }}
+                  </a>
+                  <div class="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
+                    <span>&#64;{{ post.user.username }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ formatPostAge(post.createdAt) }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span class="capitalize">{{ post.privacy }}</span>
+                  </div>
+                  @if (post.isShare) {
+                    <span class="text-xs text-gray-500">Shared post</span>
+                  }
+                </div>
+              </div>
+              <div class="relative flex shrink-0 items-center gap-1">
+                @if (post.isShare && getOriginalPostId(post.sharedPost); as originalPostId) {
+                  <a
+                    [href]="'#post-' + originalPostId"
+                    (click)="scrollToPost($event, originalPostId)"
+                    class="rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 hover:underline"
+                  >
+                    View original
+                  </a>
+                }
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-full p-2 text-gray-500 transition hover:bg-gray-100"
+                  [attr.aria-label]="'More options for ' + post.user.name + '\'s post'"
+                  aria-haspopup="menu"
+                  [attr.aria-expanded]="openPostMenuId() === post._id"
+                  (click)="togglePostMenu($event, post._id)"
+                >
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path
+                      d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </button>
+                @if (openPostMenuId() === post._id) {
+                  <div
+                    class="absolute right-0 top-full z-20 min-w-36 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                    role="menu"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+                      [disabled]="bookmarkingPostId() === post._id"
+                      (click)="toggleBookmark(post)"
+                    >
+                      @if (bookmarkingPostId() === post._id) {
+                        Updating...
+                      } @else if (post.bookmarked) {
+                        Remove from saved
+                      } @else {
+                        Save post
+                      }
+                    </button>
+                    @if (post.user._id === currentUserId) {
+                      <button
+                        type="button"
+                        role="menuitem"
+                        class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+                        [disabled]="isSavingPost() || isDeletingPost()"
+                        (click)="startEditingPost(post)"
+                      >
+                        Edit post
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                        [disabled]="isSavingPost() || isDeletingPost()"
+                        (click)="deletePost(post)"
+                      >
+                        Delete post
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </header>
+
+            @if (postActionError()) {
+              <p class="mb-3 text-sm text-red-600" role="alert">{{ postActionError() }}</p>
+            }
+
+            @if (editingPostId() === post._id) {
+              <div class="mb-3 space-y-2">
+                <textarea
+                  class="w-full resize-y rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-gray-800"
+                  aria-label="Edit post text"
+                  [value]="editingPostBody()"
+                  (input)="updateEditingPostBody($event)"
+                ></textarea>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="cursor-pointer rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                    [disabled]="!editingPostBody().trim() || isSavingPost()"
+                    (click)="savePost(post)"
+                  >
+                    {{ isSavingPost() ? 'Saving...' : 'Save' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-100"
+                    [disabled]="isSavingPost()"
+                    (click)="cancelEditingPost()"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            } @else if (post.body) {
+              <p class="mb-3 whitespace-pre-line text-sm text-gray-800">{{ post.body }}</p>
+            }
+
+            @if (post.isShare && getSharedPostDetails(post.sharedPost); as sharedPost) {
+              <section class="mb-3 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+                @if (sharedPost.user) {
+                  <header class="flex items-center gap-2.5 p-3">
+                    <a
+                      class="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                      [routerLink]="['/profile', sharedPost.user._id]"
+                      [attr.aria-label]="'View ' + sharedPost.user.name + '\'s profile'"
+                    >
+                      <img
+                        class="h-9 w-9 rounded-full object-cover"
+                        [src]="sharedPost.user.photo"
+                        [alt]="sharedPost.user.name"
+                      />
+                    </a>
+                    <div class="min-w-0">
+                      <a
+                        class="block truncate text-sm font-bold text-gray-900 hover:text-blue-600"
+                        [routerLink]="['/profile', sharedPost.user._id]"
+                      >
+                        {{ sharedPost.user.name }}
+                      </a>
+                      <p class="text-xs text-gray-500">
+                        &#64;{{ sharedPost.user.username }}
+                        @if (sharedPost.createdAt) {
+                          <span aria-hidden="true"> · </span
+                          >{{ formatPostAge(sharedPost.createdAt) }}
+                        }
+                        @if (sharedPost.privacy) {
+                          <span aria-hidden="true"> · </span>{{ sharedPost.privacy }}
+                        }
+                      </p>
+                    </div>
+                  </header>
+                }
+                @if (sharedPost.body) {
+                  <p class="whitespace-pre-line px-3 pb-3 text-sm text-gray-800">
+                    {{ sharedPost.body }}
+                  </p>
+                }
+                @if (sharedPost.image) {
+                  <button
+                    type="button"
+                    class="block w-full cursor-zoom-in border-t border-gray-200 bg-white"
+                    aria-label="View image from the original post"
+                    (click)="openImage($event, sharedPost.image)"
+                  >
+                    <img
+                      class="max-h-[500px] w-full object-contain"
+                      [src]="sharedPost.image"
+                      alt="Original post media"
+                    />
+                  </button>
+                }
+                @if (!sharedPost.user && !sharedPost.body && !sharedPost.image) {
+                  <p class="p-3 text-sm text-gray-500">Original post details are unavailable.</p>
+                }
+              </section>
+            } @else if (post.isShare) {
+              <section class="mb-3 rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                <p class="text-sm text-gray-500">Original post details are unavailable.</p>
+              </section>
+            }
+
+            @if (post.image) {
+              <button
+                type="button"
+                class="-mx-4 mb-3 block w-full cursor-pointer border-y border-gray-100 bg-gray-50 transition hover:opacity-95"
+                [attr.aria-label]="'View image from ' + post.user.name + '\'s post'"
+                (click)="openImage($event, post.image)"
+              >
+                <img
+                  [src]="post.image"
+                  alt="Post media"
+                  class="max-h-[500px] w-full object-cover"
+                />
+              </button>
+            }
+
+            <div
+              class="flex items-center justify-between gap-2 border-b border-gray-200 pb-3 text-xs text-gray-500"
+            >
+              <div class="flex items-center gap-1">
+                <span class="rounded-full bg-blue-500 p-1 text-white">
+                  <svg class="h-3 w-3 fill-current" viewBox="0 0 20 20" aria-hidden="true">
+                    <path
+                      d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 00.458 1.27l1.558 1.948a.5.5 0 00.781-.06l1.39-2.086A2 2 0 0111.83 16H15a2 2 0 002-2v-3a2 2 0 00-2-2h-3V4.5A2.5 2.5 0 009.5 2h-.5a1 1 0 00-1 1v4.333L6 10.333z"
+                    />
+                  </svg>
+                </span>
+                <button class="cursor-pointer">
+                  {{ post.likesCount }} {{ post.likesCount === 1 ? 'like' : 'likes' }}
+                </button>
+              </div>
+              <div class="flex flex-wrap justify-end gap-x-3">
+                <button class="cursor-pointer">
+                  {{ post.commentsCount }} {{ post.commentsCount === 1 ? 'comment' : 'comments' }}
+                </button>
+                <button class="cursor-pointer">
+                  {{ post.sharesCount }} {{ post.sharesCount === 1 ? 'share' : 'shares' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-1 grid grid-cols-3 text-center text-sm font-semibold text-gray-600">
+              <button
+                type="button"
+                class="flex cursor-pointer items-center justify-center gap-2 rounded-md py-2 transition hover:bg-gray-100 disabled:cursor-wait disabled:opacity-60"
+                [class.text-blue-600]="hasLikedPost(post)"
+                [disabled]="likingPostId() === post._id"
+                [attr.aria-label]="hasLikedPost(post) ? 'Unlike post by ' + post.user.name : 'Like post by ' + post.user.name"
+                (click)="togglePostLike(post)"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                  />
+                </svg>
+                <span>{{ hasLikedPost(post) ? 'Unlike' : 'Like' }}</span>
+              </button>
+              <button
+                #commentBtn 
+                type="button"
+                class="cursor-pointer flex items-center justify-center gap-2 rounded-md py-2 transition hover:bg-gray-100"
+                [attr.aria-label]="'Comment on post by ' + post.user.name"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+                <span>Comment</span>
+              </button>
+              <button
+                type="button"
+                class="flex cursor-pointer items-center justify-center gap-2 rounded-md py-2 transition hover:bg-gray-100 disabled:cursor-wait disabled:opacity-60"
+                [disabled]="sharingPostId() === post._id"
+                [attr.aria-label]="'Share post by ' + post.user.name"
+                (click)="sharePost(post)"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  />
+                </svg>
+                <span>{{ sharingPostId() === post._id ? 'Sharing...' : 'Share' }}</span>
+              </button>
+            </div>
+            @defer(on interaction(commentBtn)){
+            <app-comments
+            [postId]="post._id"
+            ></app-comments>
+            }
+          </article>
+        } @empty {
+          <div
+            class="flex flex-col items-center justify-center text-center p-8 bg-white border border-gray-200 rounded-lg max-w-xl mx-auto shadow-sm"
+          >
+            <div class="bg-gray-100 p-4 rounded-full text-gray-500 mb-4">
+              <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">No {{ sectionTitle() }} Available</h3>
+            <p class="text-sm text-gray-500 max-w-xs mb-4">
+              @switch (section()) {
+                @case ('myPosts') {
+                  Posts you create will appear here.
+                }
+                @case ('community') {
+                  Public posts from the community will appear here.
+                }
+                @case ('saved') {
+                  Posts you save will appear here.
+                }
+                @default {
+                  When people you follow share photos or updates, you'll see them here.
+                }
+              }
+            </p>
+            <a
+              routerLink="/community"
+              class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Explore Community
+            </a>
+          </div>
+        }
+      }
+    }
+  </section>
+</main>
+
+@if (selectedImage(); as imageUrl) {
+  <div
+    class="fixed inset-0 z-[100] flex cursor-zoom-out items-center justify-center bg-black/90 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Image viewer"
+    (click)="closeImage()"
+  >
+    <button
+      type="button"
+      class="absolute right-4 top-4 cursor-pointer rounded-full bg-white/15 p-3 text-white transition hover:bg-white/30"
+      aria-label="Close image viewer"
+      (click)="closeImage()"
+    >
+      <span class="text-2xl leading-none" aria-hidden="true">&times;</span>
+    </button>
+    <img
+      class="max-h-full max-w-full cursor-default object-contain"
+      [src]="imageUrl"
+      alt="Expanded post image"
+      (click)="$event.stopPropagation()"
+    />
+  </div>
+}
+
+@if (totalPage() > 1) {
+  <footer class="mt-8 w-full border-t border-gray-200 bg-white py-4">
+    <nav
+      class="mx-auto flex max-w-xl items-center justify-between gap-3 px-6"
+      aria-label="Post pages"
+    >
+      <button
+        type="button"
+        class="cursor-pointer rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="currentPage() === 1 || isLoading()"
+        (click)="previousPage()"
+      >
+        Previous
+      </button>
+
+      <div
+        class="flex min-w-0 flex-1 flex-nowrap items-center justify-center gap-2 overflow-x-auto whitespace-nowrap"
+      >
+        @for (pageNumber of pageNumbers(); track pageNumber) {
+          <button
+            type="button"
+            class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md font-semibold transition disabled:cursor-not-allowed"
+            [class.bg-blue-600]="currentPage() === pageNumber"
+            [class.text-white]="currentPage() === pageNumber"
+            [class.text-gray-700]="currentPage() !== pageNumber"
+            [class.hover:bg-gray-200]="currentPage() !== pageNumber"
+            [attr.aria-current]="currentPage() === pageNumber ? 'page' : null"
+            [disabled]="isLoading()"
+            (click)="getAllPosts(pageNumber)"
+          >
+            {{ pageNumber }}
+          </button>
+        }
+      </div>
+
+      <button
+        type="button"
+        class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="currentPage() === totalPage() || isLoading()"
+        (click)="nextPage()"
+      >
+        Next
+      </button>
+    </nav>
+  </footer>
+}

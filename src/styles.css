@@ -1,3 +1,45 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin" {
+    forms: false;
+}
+@source "../node_modules/flowbite";
 
-@import 'tailwindcss';
+@theme {
+    --color-main: #00298D;
+    --color-second: #F0F2F5;
+}
+
+:root {
+    --color-mainColor: var(--color-main);
+    --color-secondColor: var(--color-second);
+}
+
+body {
+    background-color: var(--color-secondColor);
+}
+
+.main-text-colors {
+    background: linear-gradient(90deg, #D9228A, #F33F36, #4285E8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+}
+
+.form-btn {
+    @apply flex justify-center items-center gap-0.5 enabled:bg-main text-lg font-bold text-white p-2 rounded-2xl w-full enabled:cursor-pointer enabled:hover:bg-indigo-800 duration-200 enabled:hover:shadow-2xl disabled:bg-gray-600 disabled:cursor-no-drop disabled:shadow-none;
+}
+
+.input-valid {
+    @apply border-emerald-500 border-[0.2rem] dark:border-emerald-500;
+}
+
+.input-invalid {
+    @apply border-rose-500 border-[0.2rem] dark:border-rose-500;
+}
+
+.btn-active {
+    @apply bg-[#e7f3ff] text-main;
+}

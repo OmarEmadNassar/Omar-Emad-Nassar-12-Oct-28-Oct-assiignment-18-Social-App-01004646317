@@ -1,0 +1,86 @@
+<main class="min-h-screen bg-[#f0f2f5] px-4 pb-10 pt-24 sm:px-6">
+  <section class="mx-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <header class="mb-6 flex items-center gap-3">
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+        <i class="fa-solid fa-key" aria-hidden="true"></i>
+      </span>
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-900">Change Password</h1>
+        <p class="mt-1 text-sm text-slate-600">Keep your account secure by using a strong password.</p>
+      </div>
+    </header>
+
+    <form class="space-y-5" (submit)="submitPasswordChange($event)" [formGroup]="passwordForm">
+      <div>
+        <label for="currentPassword" class="mb-2 block text-sm font-semibold text-slate-800">
+          Current password
+        </label>
+        <input
+          id="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          formControlName="currentPassword"
+          placeholder="Enter current password"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+        />
+        @if (passwordForm.controls.currentPassword.touched && passwordForm.controls.currentPassword.hasError('required')) {
+          <p class="mt-1 text-xs text-red-600">Enter your current password.</p>
+        }
+      </div>
+
+      <div>
+        <label for="newPassword" class="mb-2 block text-sm font-semibold text-slate-800">
+          New password
+        </label>
+        <input
+          id="newPassword"
+          type="password"
+          autocomplete="new-password"
+          formControlName="newPassword"
+          placeholder="Enter new password"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+        />
+        <p class="mt-1.5 text-xs text-slate-500">
+          At least 8 characters with uppercase, lowercase, number, and special character.
+        </p>
+        @if (passwordForm.controls.newPassword.touched && passwordForm.controls.newPassword.invalid) {
+          <p class="mt-1 text-xs text-red-600">Choose a password that meets the requirements above.</p>
+        }
+      </div>
+
+      <div>
+        <label for="confirmPassword" class="mb-2 block text-sm font-semibold text-slate-800">
+          Confirm new password
+        </label>
+        <input
+          id="confirmPassword"
+          type="password"
+          autocomplete="new-password"
+          formControlName="confirmPassword"
+          placeholder="Re-enter new password"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+        />
+        @if (passwordForm.controls.confirmPassword.touched && passwordForm.controls.confirmPassword.hasError('required')) {
+          <p class="mt-1 text-xs text-red-600">Confirm your new password.</p>
+        } @else if (passwordForm.controls.confirmPassword.touched && passwordForm.hasError('mismatch')) {
+          <p class="mt-1 text-xs text-red-600">The passwords do not match.</p>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="text-sm text-red-600" role="alert">{{ errorMessage() }}</p>
+      }
+      @if (successMessage()) {
+        <p class="text-sm text-green-700" role="status">{{ successMessage() }}</p>
+      }
+
+      <button
+        type="submit"
+        class="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="isSubmitting()"
+      >
+        {{ isSubmitting() ? 'Updating password...' : 'Update password' }}
+      </button>
+    </form>
+  </section>
+</main>

@@ -1,0 +1,27 @@
+<div class="mb-5 grid grid-cols-2 rounded-xl bg-slate-100 p-1">
+  <button
+    routerLink="/login"
+    routerLinkActive="bg-white text-[#00298d] shadow-sm"
+    [routerLinkActiveOptions]="{ exact: true }"
+    #loginTab="routerLinkActive"
+    ariaCurrentWhen="page"
+    [class.text-gray-700]="!loginTab.isActive"
+    type="button"
+    class="cursor-pointer rounded-lg py-2 text-sm font-extrabold transition"
+  >
+    Login
+  </button>
+
+  <button
+    routerLink="/register"
+    routerLinkActive="bg-white text-[#00298d] shadow-sm"
+    [routerLinkActiveOptions]="{ exact: true }"
+    #registerTab="routerLinkActive"
+    ariaCurrentWhen="page"
+    [class.text-gray-700]="!registerTab.isActive"
+    type="button"
+    class="cursor-pointer rounded-lg py-2 text-sm font-extrabold transition"
+  >
+    Register
+  </button>
+</div>

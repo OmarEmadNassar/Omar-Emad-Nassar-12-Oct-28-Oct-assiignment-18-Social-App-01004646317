@@ -1,0 +1,32 @@
+<app-navbar></app-navbar>
+
+<main
+  class="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 to-blue-50/60 px-5 pb-10 pt-24 text-center"
+>
+  <section class="mx-auto flex w-full max-w-5xl flex-col items-center">
+    <div class="mb-5 w-full max-w-4xl">
+      <img
+        src="/Images/404%20not%20found.png"
+        alt="404 page not found"
+        class="mx-auto h-auto w-full object-contain"
+      />
+    </div>
+
+    <div class="mt-2 flex w-full max-w-xs flex-col gap-3">
+      <a
+        routerLink="/feeds"
+        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-500 px-6 py-3 font-semibold text-white shadow-md shadow-blue-500/20 transition hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300"
+      >
+        <i class="fa-solid fa-house" aria-hidden="true"></i>
+        Back to Feed
+      </a>
+      <a
+        routerLink="/profile"
+        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-6 py-2.5 font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-white hover:text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
+      >
+        <i class="fa-regular fa-user" aria-hidden="true"></i>
+        Go to Profile
+      </a>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,184 @@
+<section class="comments-panel" aria-label="Comments">
+  <header class="comments-header">
+    <div>
+      <h2>Comments</h2>
+      <p>{{ comments().length }} {{ comments().length === 1 ? 'comment' : 'comments' }}</p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <p class="comments-status" role="status">Loading comments...</p>
+  } @else if (hasLoadError()) {
+    <div class="comments-error" role="alert">
+      <p>Comments could not be loaded.</p>
+      <button type="button" (click)="getPostComment()">Try again</button>
+    </div>
+  } @else {
+    @if (comments().length > 0) {
+      <div class="comment-list">
+        @for (comment of comments(); track comment._id) {
+          <article class="comment">
+            <img
+              class="comment-avatar"
+              [src]="comment.commentCreator.photo"
+              [alt]="comment.commentCreator.name"
+            />
+            <div class="comment-content">
+              <div class="comment-bubble">
+                <div class="comment-author">
+                  <span>{{ comment.commentCreator.name }}</span>
+                  <span class="comment-username">&#64;{{ comment.commentCreator.username }}</span>
+                </div>
+                @if (editingCommentId() === comment._id) {
+                  <form class="comment-edit-form" (submit)="updateComment($event, comment)">
+                    <textarea
+                      aria-label="Edit comment"
+                      [formControl]="editContent"
+                    ></textarea>
+                    <div class="comment-actions">
+                      <button type="submit" [disabled]="!editContent.value.trim() || isUpdating()">
+                        {{ isUpdating() ? 'Saving...' : 'Save' }}
+                      </button>
+                      <button type="button" (click)="cancelEditing()" [disabled]="isUpdating()">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                } @else if (comment.content) {
+                  <p>{{ comment.content }}</p>
+                }
+                @if (comment.image) {
+                  <img class="comment-image" [src]="comment.image" alt="Comment attachment" />
+                }
+              </div>
+              <div class="comment-meta">
+                <span>{{ formatCommentAge(comment.createdAt) }}</span>
+                <button
+                  type="button"
+                  [disabled]="likingCommentId() === comment._id"
+                  [attr.aria-pressed]="hasLikedComment(comment)"
+                  (click)="toggleCommentLike(comment)"
+                >
+                  @if (likingCommentId() === comment._id) {
+                    Updating...
+                  } @else {
+                    {{ hasLikedComment(comment) ? 'Unlike' : 'Like' }}
+                  }
+                </button>
+                <span aria-label="{{ comment.likes.length }} likes">
+                  {{ comment.likes.length }} {{ comment.likes.length === 1 ? 'like' : 'likes' }}
+                </span>
+                <button
+                  type="button"
+                  [disabled]="loadingRepliesCommentId() === comment._id"
+                  (click)="toggleReplies(comment)"
+                >
+                  @if (loadingRepliesCommentId() === comment._id) {
+                    Loading replies...
+                  } @else if (expandedReplies().includes(comment._id)) {
+                    Hide replies
+                  } @else {
+                    View {{ comment.repliesCount ?? 0 }} {{ comment.repliesCount === 1 ? 'reply' : 'replies' }}
+                  }
+                </button>
+                <button type="button" (click)="startReply(comment)">Reply</button>
+                @if (isOwnComment(comment) && editingCommentId() !== comment._id) {
+                  <button type="button" (click)="startEditing(comment)">Edit</button>
+                  <button
+                    type="button"
+                    (click)="deleteComment(comment)"
+                    [disabled]="deletingCommentId() !== null"
+                  >
+                    {{ deletingCommentId() === comment._id ? 'Deleting...' : 'Delete' }}
+                  </button>
+                }
+              </div>
+              @if (expandedReplies().includes(comment._id)) {
+                <div class="mt-3 space-y-3 border-l-2 border-slate-200 pl-3">
+                  @for (reply of repliesByComment()[comment._id]; track reply._id) {
+                    <article class="flex items-start gap-2">
+                      <img
+                        class="h-7 w-7 rounded-full object-cover"
+                        [src]="reply.commentCreator.photo"
+                        [alt]="reply.commentCreator.name"
+                      />
+                      <div class="min-w-0 rounded-xl bg-slate-100 px-3 py-2">
+                        <p class="text-xs font-semibold text-slate-800">
+                          {{ reply.commentCreator.name }}
+                          <span class="font-normal text-slate-500">
+                            &#64;{{ reply.commentCreator.username }}
+                          </span>
+                        </p>
+                        <p class="mt-1 whitespace-pre-wrap text-sm text-slate-700">{{ reply.content }}</p>
+                      </div>
+                    </article>
+                  } @empty {
+                    <p class="text-xs text-slate-500">No replies yet.</p>
+                  }
+                </div>
+              }
+              @if (replyingToCommentId() === comment._id) {
+                <form class="mt-3 flex items-center gap-2" (submit)="submitReply($event, comment)">
+                  <input
+                    class="min-w-0 flex-1 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400"
+                    aria-label="Write a reply"
+                    placeholder="Write a reply..."
+                    [formControl]="replyContent"
+                  />
+                  <button
+                    type="submit"
+                    class="rounded-full bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                    [disabled]="!replyContent.value.trim() || isSubmitting()"
+                  >
+                    Reply
+                  </button>
+                </form>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-comments">
+        <span class="empty-icon" aria-hidden="true">◌</span>
+        <p>Start the conversation</p>
+        <span>Be the first to share your thoughts.</span>
+      </div>
+    }
+  }
+
+  <form class="comment-composer" (submit)="submitComment($event)">
+    <img class="composer-avatar" src="/Images/default-profile.png" alt="" />
+    <div class="composer-field">
+      <textarea
+        rows="1"
+        aria-label="Write a comment"
+        placeholder="Write a comment..."
+        [formControl]="commentContent"
+      ></textarea>
+      <button
+        type="submit"
+        [disabled]="!commentContent.value.trim() || isSubmitting()"
+        [attr.aria-label]="isSubmitting() ? 'Posting comment' : 'Post comment'"
+      >
+        @if (isSubmitting()) {
+          <span aria-hidden="true">…</span>
+        } @else {
+        <span aria-hidden="true">➤</span>
+        }
+      </button>
+    </div>
+  </form>
+  @if (submitError()) {
+    <p class="comments-error" role="alert">{{ submitError() }}</p>
+  }
+  @if (likeError()) {
+    <p class="comments-error" role="alert">{{ likeError() }}</p>
+  }
+  @if (editError()) {
+    <p class="comments-error" role="alert">{{ editError() }}</p>
+  }
+  @if (replyError()) {
+    <p class="comments-error" role="alert">{{ replyError() }}</p>
+  }
+</section>

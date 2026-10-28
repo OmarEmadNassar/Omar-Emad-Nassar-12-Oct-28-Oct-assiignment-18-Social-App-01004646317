@@ -1,0 +1,12 @@
+<!-- <section class="mt-10 container mx-auto grid lg-:grid-cols-[250px_minmax(0,1fr)_350px]"> -->
+    <!-- <div class="mx-auto grid max-w-[1580px] grid-cols-[300px_1fr_374px] items-start gap-5 bg-[#f0f2f5] px-6 py-8 text-slate-900"> -->
+
+    <section class="mx-auto mt-10 grid max-w-[1300px] grid-cols-1 items-start gap-5 bg-[#f0f2f5] px-4 py-8 text-slate-900 sm:px-6 lg:grid-cols-[250px_minmax(0,1fr)_350px]">
+
+<app-left-side class="w-full lg:col-start-1 lg:row-start-1"></app-left-side>
+<app-right-side class="w-full lg:col-start-3 lg:row-start-1"></app-right-side>
+<div class="w-full lg:col-start-2 lg:row-start-1">
+  <app-post-composer></app-post-composer>
+  <router-outlet></router-outlet>
+</div>
+</section>

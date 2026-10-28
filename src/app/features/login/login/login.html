@@ -1,0 +1,141 @@
+
+<div class="flex w-full justify-center">
+  <div class="w-full max-w-md rounded-3xl border border-white bg-white p-6 shadow-xl shadow-blue-950/10 sm:p-8">
+    <app-btns-login></app-btns-login>
+    <!-- Header -->
+    <div class="mb-8 ">
+      <h2 class="mb-2 text-2xl font-bold text-gray-900">Log in</h2>
+      <p class="text-sm text-gray-500">Log in and continue your social journey.</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="login()" action="#" method="POST" class="space-y-5">
+      <!-- Username/Email Field -->
+            <!-- Email Address -->
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1"
+          >Email Address</label
+        >
+        <input
+        formControlName="email"
+          type="email"
+          id="email"
+          name="email"
+          required
+          class="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition placeholder:text-gray-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+          [class.border-gray-300]="!loginForm.get('email')?.touched"
+          [class.border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+          [class.border-green-500]="loginForm.get('email')?.valid && loginForm.get('email')?.touched"
+          placeholder="you@example.com"
+        />
+      </div>
+      @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+    <div class="flex p-1 mb-4 text-sm text-red-700 rounded-base bg-red-100 border border-red-200" role="alert">
+  <svg class="w-4 me-1 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+  <span class="sr-only">Danger</span>
+  <div>
+      <ul class="text-sm font-medium text-red-700">
+        @if (loginForm.get('email')?.hasError('required')) {
+          <p>Email is required</p>
+        }
+        @else if (loginForm.get('email')?.hasError('email')) {
+          <p>Please enter a valid email address</p>
+        }
+    </ul>
+  </div>
+</div>
+
+}
+
+
+      <!-- Password Field -->
+         <!-- Password -->
+      <div class="relative">
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input
+        #pass
+        formControlName="password"
+          type="password"
+          id="password"
+          name="password"
+          required
+          class="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 outline-none transition placeholder:text-gray-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+          [class.border-gray-300]="!loginForm.get('password')?.touched"
+          [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          [class.border-green-500]="loginForm.get('password')?.valid && loginForm.get('password')?.touched"
+          placeholder="••••••••"
+        />
+        <button
+          type="button"
+          class="absolute right-2 top-9 flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-800"
+          [attr.aria-label]="pass.type === 'password' ? 'Show password' : 'Hide password'"
+          (click)="togglePass(pass)"
+        >
+          <i
+            class="fa-regular fa-sm"
+            [class.fa-eye]="pass.type === 'text'"
+            [class.fa-eye-slash]="pass.type === 'password'"
+            aria-hidden="true"
+          ></i>
+        </button>
+      </div>
+      @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+    <div class="flex p-1 mb-4 text-sm text-red-700 rounded-base bg-red-100 border border-red-200" role="alert">
+  <svg class="w-4 me-1 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+  <span class="sr-only">Danger</span>
+  <div>
+      <div class="text-sm font-medium text-red-700">
+        @if (loginForm.get('password')?.hasError('required')) {
+          <p>Password is required</p>
+        }
+        @else if (loginForm.get('password')?.hasError('pattern')) {
+          <p>Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.</p>
+        }
+    </div>
+  </div>
+</div>
+
+}
+
+
+      <!-- Remember Me Checkbox -->
+      <!-- <div class="flex items-center">
+        <input 
+          type="checkbox" 
+          id="remember-me" 
+          name="remember-me" 
+          class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        >
+        <label for="remember-me" class="ml-2 block text-sm text-gray-600 select-none">Remember me</label>
+      </div> -->
+
+      <!-- Submit Button -->
+      @if (msgError()) {
+        <p class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert">
+          {{ msgError() }}
+        </p>
+      }
+      <button 
+      
+        type="submit" 
+        [disabled]="loading()"
+        class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        Sign In
+                
+          @if (loading()) {
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        }
+
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="mt-6 border-t border-gray-100 pt-5 text-center">
+      <p class="text-sm text-gray-600">
+        New to the journey? 
+        <a routerLink="/register" class="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">Create an account</a>
+      </p>
+    </div>
+  </div>
+</div>
